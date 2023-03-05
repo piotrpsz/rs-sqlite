@@ -2,8 +2,8 @@
 name = "rs-sqlite"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Piotr Pszczółkowski"]
+about = "rust wrapper for access to sqlite3 library"
 
 [dependencies]
 libc = "0.2.139"

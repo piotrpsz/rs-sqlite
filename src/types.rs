@@ -76,7 +76,7 @@ impl From<Vec<u8>> for Value {
     }
 }
 impl From<NullValue> for Value {
-    fn from(s: NullValue) -> Self {
+    fn from(_: NullValue) -> Self {
         Value::Null
     }
 }

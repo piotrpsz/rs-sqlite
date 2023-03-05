@@ -1,10 +1,12 @@
+#![allow(dead_code)]
+
 extern crate sqlite3_sys;
 
 use std::ffi::{c_void, CStr, CString};
 use std::intrinsics::copy;
 use std::mem::transmute;
 
-use libc::{boolean_t, c_char, c_double, c_int};
+use libc::{c_char, c_double, c_int};
 use sqlite3_sys::{sqlite3,
                   sqlite3_bind_blob,
                   sqlite3_bind_double,
@@ -31,7 +33,6 @@ use sqlite3_sys::{sqlite3,
                   SQLITE_OK,
                   SQLITE_ROW};
 
-use crate::db::SQLite;
 use crate::store::Store;
 use crate::types::{Row, Type, Value};
 
@@ -145,7 +146,7 @@ impl Stmt {
     pub(crate) fn fetch_row(&self, n: usize) -> Row {
         let mut row = Row::with_capacity(n as usize);
 
-        for i in (0..n) {
+        for i in 0..n {
             let name = self.column_name(i);
             match self.column_type(i) {
                 Type::Null => {

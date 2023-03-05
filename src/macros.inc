@@ -1,5 +1,4 @@
-#[macro_use]
-
+#[allow(unused_macros)]
 macro_rules! fpos {
         () => {{
         fn f() {}
@@ -27,6 +26,7 @@ macro_rules! fpos {
     }}
 }
 
+#[allow(unused_macros)]
 macro_rules! sql_error(
     ($db: expr) => (
         let (file, func, line) = fpos!();

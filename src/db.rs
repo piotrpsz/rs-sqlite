@@ -1,12 +1,9 @@
 extern crate sqlite3_sys;
 
-use std::env::args;
 use std::ffi::{CStr, CString};
 use std::fs;
-use std::path::Path;
-use std::ptr::{null, null_mut};
+use std::ptr::{null_mut};
 
-use libc::{c_char, c_int, NOTE_DELETE};
 use sqlite3_sys::{sqlite3,
                   sqlite3_close_v2,
                   sqlite3_errcode,
@@ -21,8 +18,7 @@ use sqlite3_sys::{sqlite3,
                   SQLITE_DONE,
                   SQLITE_OK,
                   SQLITE_OPEN_CREATE,
-                  SQLITE_OPEN_READWRITE,
-                  SQLITE_ROW};
+                  SQLITE_OPEN_READWRITE};
 
 use crate::store::Store;
 use crate::stmt::Stmt;
@@ -65,15 +61,17 @@ impl SQLite {
     /// Closes database.
     pub fn close(&mut self) -> bool {
         match self.db {
-            null => true,
-            _ => match unsafe { sqlite3_close_v2(self.db) } {
-                SQLITE_OK => {
-                    self.db = null_mut();
-                    true
-                }
-                _ => {
-                    sql_error!(self);
-                    false
+            DB_NULL => true,
+            _ => {
+                match unsafe { sqlite3_close_v2(self.db) } {
+                    SQLITE_OK => {
+                        self.db = null_mut();
+                        true
+                    }
+                    _ => {
+                        sql_error!(self);
+                        false
+                    }
                 }
             }
         }
