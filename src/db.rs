@@ -192,7 +192,11 @@ impl SQLite {
 
         let mut stmt = Stmt::new();
         if stmt.prepare(self.db, query) && stmt.bind(args) {
-            return Some(stmt.fetch_result());
+            let result = stmt.fetch_result();
+            if !result.is_empty() {
+                return Some(result);
+            }
+            return None;
         }
         sql_error!(self);
         stmt.finalize();

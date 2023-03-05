@@ -28,8 +28,8 @@ fn main() {
                                   .add(102)
                                   .add(3.1415)
                                   .add(vec![1u8, 2, 255, 5, 170]));
-        println!("rowid of added row: {:?}", rowid);
-        print_content("after Ahsoka added", &mut db);
+        let desc = format!("rowid of added row: {:?}", rowid);
+        print_content("after Ahsoka added", &desc,  &mut db);
 
         let update_person = "UPDATE person SET first_name=?, last_name=?, age=?, cof=?, data=? WHERE id=?";
         let stat =  db.update(update_person,
@@ -40,28 +40,30 @@ fn main() {
                                   .add(3.1415)
                                   .add(vec![4u8, 5, 6])
                                   .add(rowid));
-        print_content("after change Ahsoka => Luke", &mut db);
+        let desc = format!("update status: {:?}", stat);
+        print_content("after change Ahsoka => Luke", &desc,  &mut db);
 
         let rowid = db.insert(insert_person,
-                              Store::with_capacity(6)
+                              Store::new()
                                   .add("Dart")
                                   .add("Vader")
                                   .add(102)
-                                  .add(3.1415)
-                                  .add(vec![0x1u8, 0x2, 0xff, 0x5, 0xaa]));
-        print_content("after Dart Vader added", &mut db);
+                                  .add(6.625)
+                                  .add(vec![100u8, 200]));
+        let desc = format!("rowid of added row: {:?}", rowid);
+        print_content("after Dart Vader added", &desc,  &mut db);
     }
 }
 
-fn print_content(title: &str, db: &mut SQLite) {
-    println!("\nContent {:?}", title);
+fn print_content(title: &str, desc: &str, db: &mut SQLite) {
     println!("---------------------------------------------");
+    println!("Content {}\n{}\n", title, desc);
 
     let retv = db.select("SELECT * FROM person", Store::new());
     if let Some(retv) = retv {
         for (id, row) in retv.iter().enumerate() {
             println!("[Row {}]", id + 1);
-            println!("{:?}", row);
+            println!("{:?}\n", row);
         }
     }
 }
