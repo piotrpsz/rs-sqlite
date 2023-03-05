@@ -41,6 +41,7 @@ pub struct SQLite {
 impl SQLite {
     /// Inits database.
     pub fn new() -> SQLite {
+        println!("sqlite3: {}", SQLite::version());
         unsafe {
             match sqlite3_initialize() {
                 SQLITE_OK => SQLite::default(),

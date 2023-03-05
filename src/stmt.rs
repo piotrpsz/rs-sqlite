@@ -189,7 +189,7 @@ impl Stmt {
             let idx = idx as c_int;
             let ptr = v.as_ptr() as *const c_char;
             let nbytes = v.len() as c_int;
-            SQLITE_OK == sqlite3_bind_text(self.0, idx, ptr, nbytes, transmute(!0 as *const ::libc::c_void))
+            SQLITE_OK == sqlite3_bind_text(self.0, idx, ptr, nbytes, transmute(!0 as *const c_void))
         }
     }
     #[inline]
@@ -198,7 +198,7 @@ impl Stmt {
             let idx = idx as c_int;
             let ptr = v.as_ptr() as *const c_void;
             let nbytes = v.len() as c_int;
-            SQLITE_OK == sqlite3_bind_blob(self.0, idx, ptr, nbytes, transmute(!0 as *const ::libc::c_void))
+            SQLITE_OK == sqlite3_bind_blob(self.0, idx, ptr, nbytes, transmute(!0 as *const c_void))
         }
     }
     #[inline]
