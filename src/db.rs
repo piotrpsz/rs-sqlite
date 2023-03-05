@@ -36,7 +36,7 @@ include!("macros.inc");
 
 /// Object handled connection with SQLite database
 /// (via c-library sqlite3).
-#[link(name = "sqlite3")]
+
 pub struct SQLite {
     db: *mut sqlite3,
     fpath: String,

@@ -1,4 +1,4 @@
 pub mod db;
-pub mod types;
-pub mod stmt;
-pub mod store;
+pub(crate) mod types;
+pub(crate) mod stmt;
+pub(crate) mod store;

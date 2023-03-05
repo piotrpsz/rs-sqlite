@@ -6,38 +6,36 @@ use std::mem::transmute;
 
 use libc::{boolean_t, c_char, c_double, c_int};
 use sqlite3_sys::{sqlite3,
-                  sqlite3_stmt,
-                  sqlite3_int64,
+                  sqlite3_bind_blob,
+                  sqlite3_bind_double,
+                  sqlite3_bind_int64,
+                  sqlite3_bind_null,
+                  sqlite3_bind_parameter_index,
+                  sqlite3_bind_text,
                   sqlite3_clear_bindings,
+                  sqlite3_column_blob,
+                  sqlite3_column_bytes,
                   sqlite3_column_count,
+                  sqlite3_column_double,
+                  sqlite3_column_int,
+                  sqlite3_column_int64,
+                  sqlite3_column_name,
+                  sqlite3_column_text,
+                  sqlite3_column_type,
                   sqlite3_finalize,
+                  sqlite3_int64,
                   sqlite3_prepare_v2,
                   sqlite3_reset,
                   sqlite3_step,
-                  sqlite3_column_type,
-                  sqlite3_bind_parameter_index,
-                  sqlite3_column_name,
-                  sqlite3_bind_int64,
-                  sqlite3_bind_double,
-                  sqlite3_bind_text,
-                  sqlite3_bind_blob,
-                  sqlite3_bind_null,
-                  sqlite3_column_int64,
-                  sqlite3_column_int,
-                  sqlite3_column_double,
-                  sqlite3_column_text,
-                  sqlite3_column_bytes,
-                  sqlite3_column_blob,
-                  SQLITE_ROW,
-                  SQLITE_OK};
+                  sqlite3_stmt,
+                  SQLITE_OK,
+                  SQLITE_ROW};
 
-// use {error, fpos, info, trace};
 use crate::db::SQLite;
 use crate::store::Store;
 use crate::types::{Row, Type, Value};
 
 include!("macros.inc");
-
 
 /// Stmt object to handle prepared statement
 pub(crate) struct Stmt(*mut sqlite3_stmt);
@@ -76,9 +74,7 @@ impl Stmt {
 
     /// Step to next row in result
     pub(crate) fn step(&mut self) -> c_int {
-        unsafe {
-            sqlite3_step(self.0)
-        }
+        unsafe { sqlite3_step(self.0) }
     }
 
     /// Columns number in row in result

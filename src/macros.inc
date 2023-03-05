@@ -34,13 +34,6 @@ macro_rules! sql_error(
     );
 );
 
-macro_rules! check(
-    ($db: expr) => (
-        if $db.fpath.is_empty() {
-            panic!("unkown database path");
-        }
-    );
-);
 
 macro_rules! str2ptr(
     ($str:expr) => (
@@ -48,11 +41,6 @@ macro_rules! str2ptr(
     );
 );
 
-macro_rules! ptr2str(
-    ($ptr:expr) => (
-        String::from_utf8_lossy(CString::from_raw($ptr).to_bytes()).into_owned().clone()
-    );
-);
 
 
 
