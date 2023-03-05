@@ -21,6 +21,7 @@ fn main() {
 
     if db.create(vec![create_person]) {
         let insert_person = "INSERT INTO person (first_name, last_name, age, cof, data) VALUES (?,?,?,?,?)";
+
         let rowid = db.insert(insert_person,
                               Store::with_capacity(6)
                                   .add("Ahsoka")

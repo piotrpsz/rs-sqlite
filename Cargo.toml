@@ -8,3 +8,4 @@ about = "rust wrapper for access to sqlite3 library"
 [dependencies]
 libc = "0.2.139"
 sqlite3-sys = "0.14.0"
+rust-argon2 = "1.0.0"

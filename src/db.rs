@@ -4,6 +4,7 @@ use std::ffi::{CStr, CString};
 use std::fs;
 use std::ptr::{null_mut};
 
+
 use sqlite3_sys::{sqlite3,
                   sqlite3_close_v2,
                   sqlite3_errcode,
@@ -19,6 +20,7 @@ use sqlite3_sys::{sqlite3,
                   SQLITE_OK,
                   SQLITE_OPEN_CREATE,
                   SQLITE_OPEN_READWRITE};
+use crate::hash;
 
 use crate::store::Store;
 use crate::stmt::Stmt;
