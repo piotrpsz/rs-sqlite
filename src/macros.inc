@@ -30,7 +30,7 @@ macro_rules! fpos {
 macro_rules! sql_error(
     ($db: expr) => (
         let (file, func, line) = fpos!();
-        eprintln!("ERROR [{}/{}:{}] {} ({})", file, func, line, $db.err_string(), $db.err_code());
+        eprintln!("ERROR [{}/{}:{}] {} ({})", file, func, line, SQLite::err_string($db), SQLite::err_code($db));
     );
 );
 
