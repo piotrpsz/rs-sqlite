@@ -5,15 +5,15 @@ First of all, you must have the sqlite3 library available on your hard drive
 # How to use
 We create a handle to a database object by calling <b>SQLite::new()</b>.<br>
 
-### Create database in-memory
-You can create a database in your computer's memory:<br>
+### Database in-memory
+You can create an SQLite object which the database will store in your computer's memory:<br>
 ```asciidoc
     let mut db = SQLite::new()
         .in_memory();
 ```
 
-### Create database on disk
-You can also create it on your computer's hard drive:
+### Database on disk
+You can create an SQLite object which the database will store on  your computer's hard drive:
 ```asciidoc
     let mut db = SQLite::new()
         .file("/Users/piotr/example.sqlite");
@@ -36,13 +36,13 @@ We create a string containing the command to create the table with information a
 ```
 
 ### Create a database with table(s)
-
-And now we can create the database and tables:
+The moment has come when we want to create a database.<br>
+We create the database and table(s) in the following way:
 ```asciidoc
     db.create(vec![create_person])
 ```
-Note that the parameter passed to <b>create(..)</b> function is a vector of strings.<br>
-That is, by passing more proper strings, you can create more tables with one function call.<br>
+Note that the parameter passed to <b>create(..)</b> method is a vector of strings.<br>
+That is, by passing more proper strings, you can create more tables when the database is created.<br>
 
 ### Insert a row
 
@@ -61,7 +61,7 @@ That is, by passing more proper strings, you can create more tables with one fun
 ```asciidoc
         let update_person = "UPDATE person SET first_name=?, last_name=?, age=?, cof=?, data=? WHERE id=?";
         let stat =  db.update(update_person,
-                              Store::with_capacity(6)
+                              Store::new()
                                   .add("Luke")
                                   .add("Skywalker")
                                   .add(102)
@@ -74,6 +74,7 @@ That is, by passing more proper strings, you can create more tables with one fun
 
 ```asciidoc
     let retv = db.select("SELECT * FROM person", Store::new());
+
     if let Some(retv) = retv {
         for (id, row) in retv.iter().enumerate() {
             println!("[Row {}]", id + 1);
@@ -83,5 +84,6 @@ That is, by passing more proper strings, you can create more tables with one fun
 ```
 
 ### Complete example
-A more complete example can be found in the <b>example</b> directory<br>
-in GitHub project's repository https://github.com/piotrpsz/rs-sqlite/tree/main/examples
+A more complete example can be found in the <b>example</b> directory in GtiHub<br>
+project's repository:
+#### https://github.com/piotrpsz/rs-sqlite/tree/main/examples
