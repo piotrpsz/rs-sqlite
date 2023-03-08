@@ -19,6 +19,7 @@ use sqlite3_sys::{sqlite3,
                   SQLITE_DONE,
                   SQLITE_OK,
                   SQLITE_OPEN_CREATE,
+                  SQLITE_OPEN_READONLY,
                   SQLITE_OPEN_READWRITE};
 use crate::hash;
 
@@ -51,16 +52,25 @@ impl SQLite {
             }
         }
     }
+
+    /**** file *****************************************************/
+
     /// Sets path to database file.
     pub fn file(mut self, fpath: &str) -> Self {
         self.fpath = fpath.clone().into();
         self
     }
+
+    /**** in_memory ************************************************/
+
     /// Sets database in memory.
     pub fn in_memory(mut self) -> Self {
         self.fpath = IN_MEMORY.into();
         self
     }
+
+    /**** close ****************************************************/
+
     /// Closes database.
     pub fn close(&mut self) -> bool {
         match self.db {
@@ -79,6 +89,9 @@ impl SQLite {
             }
         }
     }
+
+    /**** err_string ***********************************************/
+
     /// Returns last error description.
     pub fn err_string(&self) -> String {
         unsafe {
@@ -86,10 +99,47 @@ impl SQLite {
             String::from_utf8_lossy(CStr::from_ptr(cptr).to_bytes()).into_owned()
         }
     }
+
+    /**** err_code *************************************************/
+
     /// Returns last error code.
     pub fn err_code(&self) -> i32 {
         unsafe { sqlite3_errcode(self.db) as i32 }
     }
+
+    /**** open *****************************************************/
+
+    /// Opens a database existed already on disk.
+    pub fn open(&mut self, read_only: bool) -> bool {
+        // can't open a database when is alreadey opened
+        if self.db != DB_NULL {
+            eprintln!("database already opened");
+            return false;
+        }
+
+        let mut flags = match read_only {
+            false => SQLITE_OPEN_READONLY,
+            true => SQLITE_OPEN_READWRITE,
+        };
+
+        unsafe {
+            let stat = sqlite3_open_v2(
+                str2ptr!(self.fpath.clone()),
+                &mut self.db,
+                flags,
+                std::ptr::null());
+            match stat {
+                SQLITE_OK => true,
+                _ => {
+                    sql_error!(self);
+                    false
+                }
+            }
+        }
+    }
+
+    /**** create ***************************************************/
+
     /// Creates and inits a database.
     pub fn create(&mut self, cmd: Vec<&str>) -> bool {
         if self.db != DB_NULL {
@@ -123,7 +173,6 @@ impl SQLite {
                     // Execute initial queries (create tables for example)
                     for query in cmd {
                         if !self.exec(query) {
-                            sql_error!(self);
                             return false;
                         }
                     }
@@ -136,6 +185,9 @@ impl SQLite {
             }
         }
     }
+
+    /**** exec *****************************************************/
+
     /// Executes a query without parameters
     pub fn exec(&mut self, query: &str) -> bool {
         if self.db == DB_NULL {
@@ -158,6 +210,9 @@ impl SQLite {
             }
         }
     }
+
+    /**** exec_query ***********************************************/
+
     /// Executes a query with passed arguments.
     pub fn exec_query(&mut self, query: &str, args: Store) -> bool {
         if self.db == DB_NULL {
@@ -176,6 +231,9 @@ impl SQLite {
         stmt.finalize();
         false
     }
+
+    /**** insert ***************************************************/
+
     /// Executes INSERT command with arguments
     /// and returns 'rowid' of inserted row.
     pub fn insert(&mut self, query: &str, args: Store) -> i64 {
@@ -184,10 +242,13 @@ impl SQLite {
             _ => 0
         }
     }
+
+    /**** select ***************************************************/
+
     /// Executes SELECT command with argumets
     /// and returns fetched rows.
     pub fn select(&mut self, query: &str, args: Store) -> Option<Vec<Row>> {
-        if self.db == DB_NULL {
+        if DB_NULL == self.db {
             eprintln!("database is not opened");
             return None;
         }
@@ -204,18 +265,30 @@ impl SQLite {
         stmt.finalize();
         None
     }
+
+    /**** update ***************************************************/
+
     /// Executes UPDATE command with arguments.
     pub fn update(&mut self, query: &str, args: Store) -> bool {
         self.exec_query(query, args)
     }
+
+    /**** last_inserted_id *****************************************/
+
     /// Returns last inserted 'rowid'
     fn last_inserted_id(&self) -> i64 {
         unsafe { sqlite3_last_insert_rowid(self.db) as i64 }
     }
+
+    /**** version_number *******************************************/
+
     /// Returns library version as a number.
     pub fn version_number() -> i32 {
         unsafe { sqlite3_libversion_number() as i32 }
     }
+
+    /**** version **************************************************/
+
     /// Returns library version as text.
     pub fn version() -> String {
         unsafe {

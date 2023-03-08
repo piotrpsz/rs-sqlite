@@ -46,6 +46,8 @@ impl Stmt {
         Stmt(std::ptr::null_mut())
     }
 
+    /**** prepare **************************************************/
+
     /// Prepare query
     pub(crate) fn prepare(&mut self, db: *mut sqlite3, query: &str) -> bool {
         unsafe {
@@ -59,12 +61,16 @@ impl Stmt {
         }
     }
 
+    /**** reset ****************************************************/
+
     /// Resets prepared query
     pub(crate) fn reset(&mut self) -> bool {
         unsafe {
-            SQLITE_OK == sqlite3_reset(self.0) && SQLITE_OK == sqlite3_clear_bindings(self.0)
+            SQLITE_OK == (sqlite3_reset(self.0) & sqlite3_clear_bindings(self.0))
         }
     }
+
+    /**** finalize *************************************************/
 
     /// Finalize prepared query
     pub(crate) fn finalize(&mut self) -> bool {
@@ -73,15 +79,21 @@ impl Stmt {
         }
     }
 
+    /**** step *****************************************************/
+
     /// Step to next row in result
     pub(crate) fn step(&mut self) -> c_int {
         unsafe { sqlite3_step(self.0) }
     }
 
+    /**** column_count *********************************************/
+
     /// Columns number in row in result
     pub(crate) fn column_count(&self) -> usize {
         unsafe { sqlite3_column_count(self.0) as usize }
     }
+
+    /**** column_type **********************************************/
 
     /// Returns value type in column
     pub(crate) fn column_type(&self, idx: usize) -> Type {
@@ -91,12 +103,16 @@ impl Stmt {
         }
     }
 
+    /**** column_index *********************************************/
+
     /// Zwraca indeks kolumny o wskazanej nazwie
     pub(crate) fn column_index(&self, column_name: &str) -> i32 {
         unsafe {
             sqlite3_bind_parameter_index(self.0, str2ptr!(column_name)) as i32
         }
     }
+
+    /**** column_name **********************************************/
 
     /// Zwraca nazwę kolumny o podanym indeksie
     pub(crate) fn column_name(&self, idx: usize) -> String {
@@ -105,6 +121,8 @@ impl Stmt {
             String::from_utf8_lossy(CStr::from_ptr(ptr).to_bytes()).into_owned()
         }
     }
+
+    /**** bind *****************************************************/
 
     /// Bindowanie przysłanych argumentów do spreparowanego 'stmt'
     pub(crate) fn bind(&mut self, args: Store) -> bool {
@@ -115,6 +133,8 @@ impl Stmt {
         }
         true
     }
+
+    /**** bind_at_index ********************************************/
 
     /// Bindowanie podanej wartości na wskazanej pozycji
     fn bind_at_index(&self, idx: usize, v: &Value) -> bool {
@@ -127,6 +147,8 @@ impl Stmt {
         }
     }
 
+    /**** fetch_result *********************************************/
+
     /// Odczyt wszystkich wierszy z ostatnio wyknanego zapytania.
     ///
     /// # Returns
@@ -135,12 +157,17 @@ impl Stmt {
         let column_count = self.column_count();
         let mut result = Vec::new();
 
-        while self.step() == SQLITE_ROW {
-            result.push(self.fetch_row(column_count));
+        while SQLITE_ROW == self.step() {
+            let row = self.fetch_row(column_count);
+            if !row.is_empty() {
+                result.push(row);
+            }
         }
 
         result
     }
+
+    /**** fetch_row ************************************************/
 
     /// Zwraca wiersz z wyniku
     pub(crate) fn fetch_row(&self, n: usize) -> Row {
