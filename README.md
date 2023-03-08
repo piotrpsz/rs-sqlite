@@ -3,6 +3,26 @@ Crate rs-sqlite allows you to use the sqlite3 library in rust.<br>
 First of all, you must have the sqlite3 library available on your hard drive
 
 # How to use
+## Add crate to project
+Add this line in Cargo.toml to dependecis:
+```asciidoc
+rs-sqlite = { git = "https://github.com/piotrpsz/rs-sqlite", version="*" }
+```
+or add new section:
+```asciidoc
+[dependencies.rs-sqlite]
+git = "https://github.com/piotrpsz/rs-sqlite"
+version="*"
+```
+in source file add:
+```asciidoc
+use rs_sqlite::{
+    db::SQLite,
+    store::Store,
+};
+```
+
+## Implementation
 We create a handle to a database object by calling <b>SQLite::new()</b>.<br>
 
 ### Database in-memory
