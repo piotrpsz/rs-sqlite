@@ -12,7 +12,7 @@ You can create a database in your computer's memory:<br>
         .in_memory();
 ```
 
-### Create table on disk
+### Create database on disk
 You can also create it on your computer's hard drive:
 ```asciidoc
     let mut db = SQLite::new()
