@@ -20,7 +20,6 @@ You can also create it on your computer's hard drive:
 ```
 
 ### Defining the table and its structure
-The database created in this way is completely empty.<br>
 Suppose we want to create a table named <b>person</b>.<br>
 We create a string containing the command to create the table with information about its columns.
 ```asciidoc
@@ -36,13 +35,13 @@ We create a string containing the command to create the table with information a
     )"#;
 ```
 
-### Create a table in the database
+### Create a database with table(s)
 
-And now we can create the table defined in this way:
+And now we can create the database and tables:
 ```asciidoc
     db.create(vec![create_person])
 ```
-Note that the parameter to the <b>create(..)</b> function is a vector of strings.<br>
+Note that the parameter passed to <b>create(..)</b> function is a vector of strings.<br>
 That is, by passing more proper strings, you can create more tables with one function call.<br>
 
 ### Insert a row
