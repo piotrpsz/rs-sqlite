@@ -82,7 +82,7 @@ impl SQLite {
                         true
                     }
                     _ => {
-                        sql_error!(self);
+                        sql_error!(self.db);
                         false
                     }
                 }
@@ -93,9 +93,9 @@ impl SQLite {
     /**** err_string ***********************************************/
 
     /// Returns last error description.
-    pub fn err_string(&self) -> String {
+    pub fn err_string(db: *mut sqlite3) -> String {
         unsafe {
-            let cptr = sqlite3_errmsg(self.db);
+            let cptr = sqlite3_errmsg(db);
             String::from_utf8_lossy(CStr::from_ptr(cptr).to_bytes()).into_owned()
         }
     }
@@ -103,8 +103,8 @@ impl SQLite {
     /**** err_code *************************************************/
 
     /// Returns last error code.
-    pub fn err_code(&self) -> i32 {
-        unsafe { sqlite3_errcode(self.db) as i32 }
+    pub fn err_code(db: *mut sqlite3) -> i32 {
+        unsafe { sqlite3_errcode(db) as i32 }
     }
 
     /**** open *****************************************************/
@@ -131,7 +131,7 @@ impl SQLite {
             match stat {
                 SQLITE_OK => true,
                 _ => {
-                    sql_error!(self);
+                    sql_error!(self.db);
                     false
                 }
             }
@@ -179,7 +179,7 @@ impl SQLite {
                     true
                 }
                 _ => {
-                    sql_error!(self);
+                    sql_error!(self.db);
                     false
                 }
             }
@@ -204,7 +204,7 @@ impl SQLite {
             match stat {
                 SQLITE_OK => true,
                 _ => {
-                    sql_error!(self);
+                    sql_error!(self.db);
                     false
                 }
             }
@@ -220,14 +220,14 @@ impl SQLite {
             return false;
         }
 
-        let mut stmt = Stmt::new();
-        if stmt.prepare(self.db, query) && stmt.bind(args) {
+        let mut stmt = Stmt::new(self.db);
+        if stmt.prepare(query) && stmt.bind(args) {
             if SQLITE_DONE == stmt.step() {
                 stmt.finalize();
                 return true;
             }
         }
-        sql_error!(self);
+        sql_error!(self.db);
         stmt.finalize();
         false
     }
@@ -253,15 +253,15 @@ impl SQLite {
             return None;
         }
 
-        let mut stmt = Stmt::new();
-        if stmt.prepare(self.db, query) && stmt.bind(args) {
+        let mut stmt = Stmt::new(self.db);
+        if stmt.prepare(query) && stmt.bind(args) {
             let result = stmt.fetch_result();
             if !result.is_empty() {
                 return Some(result);
             }
             return None;
         }
-        sql_error!(self);
+        sql_error!(self.db);
         stmt.finalize();
         None
     }
@@ -323,7 +323,7 @@ impl Drop for SQLite {
                     return;
                 }
             }
-            sql_error!(self);
+            sql_error!(self.db);
         }
     }
 }
