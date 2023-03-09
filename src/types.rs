@@ -82,10 +82,18 @@ impl From<NullValue> for Value {
 }
 impl From<&Value> for i64 {
     fn from(value: &Value) -> i64 {
-        if let Value::Int(v) = value {
-            return *v;
+        match value {
+            Value::Int(v) => *v,
+            _ => panic!("it is not i64")
         }
-        0
+    }
+}
+impl From<&Value> for f64 {
+    fn from(value: &Value) -> f64 {
+        match value {
+            Value::Float(v) => *v,
+            _ => panic!("it is not f64")
+        }
     }
 }
 impl From<&Value> for String {

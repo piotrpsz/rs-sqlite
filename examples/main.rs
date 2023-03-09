@@ -53,6 +53,20 @@ fn main() {
                                   .add(vec![100u8, 200]));
         let desc = format!("rowid of added row: {:?}", rowid);
         print_content("after Dart Vader added", &desc,  &mut db);
+
+        let select_query = "SELECT * FROM person WHERE id=?";
+        let retv = db.select(select_query,
+                            Store::with_capacity(1)
+                                .add(1)).unwrap();
+        println!("Select one\n{:?}", retv);
+        let row = &retv[0];
+
+        let id = row["id"].as_ref().unwrap();
+        let tid: i64 = id.into();
+
+        let cof = row["cof"].as_ref().unwrap();
+        let tcof: f64 = cof.into();
+        println!("id => {}, cof => {}", tid, tcof);
     }
 }
 
