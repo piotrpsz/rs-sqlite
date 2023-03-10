@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2023 Piotr Pszczółkowski
+ * Licence: GNU v2
+ *
+ * E-mail: piotr@beesoft.pl
+ *
+ * Project: rs-sqlite
+ * File: stmt.rs
+ */
 #![allow(dead_code)]
 
 extern crate sqlite3_sys;
@@ -36,7 +45,8 @@ use sqlite3_sys::{sqlite3,
                   SQLITE_ROW};
 
 use crate::store::Store;
-use crate::types::{Row, Type, Value};
+use crate::types::{Type, Row};
+use crate::value::Value;
 
 include!("macros.inc");
 

@@ -117,7 +117,7 @@ impl SQLite {
             return false;
         }
 
-        let mut flags = match read_only {
+        let flags = match read_only {
             false => SQLITE_OPEN_READONLY,
             true => SQLITE_OPEN_READWRITE,
         };

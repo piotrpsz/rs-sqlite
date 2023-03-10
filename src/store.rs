@@ -1,6 +1,17 @@
+/*
+ * Copyright (C) 2023 Piotr Pszczółkowski
+ * Licence: GNU v2
+ *
+ * E-mail: piotr@beesoft.pl
+ *
+ * Project: rs-sqlite
+ * File: store.rs
+ */
 use core::slice::Iter;
+use chrono::NaiveDateTime;
+use crate::types::Timestamp;
 
-use crate::types::{NullValue, Value};
+use crate::value::{NullValue, Value};
 
 #[derive(Debug)]
 pub struct Store(Vec<Value>);
@@ -41,6 +52,16 @@ pub trait ValueConvertible {
     fn to_value(&self) -> Value;
 }
 
+impl ValueConvertible for NaiveDateTime {
+    fn to_value(&self) -> Value {
+        (*self).into()
+    }
+}
+impl ValueConvertible for Timestamp {
+    fn to_value(&self) -> Value {
+        (*self).into()
+    }
+}
 impl ValueConvertible for i8 {
     fn to_value(&self) -> Value {
         (*self as i64).into()

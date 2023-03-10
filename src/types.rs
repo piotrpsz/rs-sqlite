@@ -1,109 +1,17 @@
-use::std::collections::HashMap;
+/*
+ * Copyright (C) 2023 Piotr Pszczółkowski
+ * Licence: GNU v2
+ *
+ * E-mail: piotr@beesoft.pl
+ *
+ * Project: rs-sqlite
+ * File: types.rs
+ */
+use std::collections::HashMap;
 use std::convert::From;
-
+use chrono::{DateTime, Local, Utc};
+use crate::value::Value;
 pub type Row = HashMap<String, Option<Value>>;
-pub struct NullValue;
-
-#[derive(Debug, Clone)]
-pub enum Value {
-    Null,
-    Int(i64),
-    Float(f64),
-    Text(String),
-    Blob(Vec<u8>),
-}
-
-impl Value {
-    pub fn kind(&self) -> Type{
-        match self {
-            Value::Null => Type::Null,
-            Value::Int(_) => Type::Int64,
-            Value::Float(_) => Type::Float64,
-            Value::Text(_) => Type::Text,
-            Value::Blob(_) => Type::Blob
-        }
-    }
-}
-
-impl From<i8> for Value {
-    fn from(v: i8) -> Self {
-        Value::Int(v as i64)
-    }
-}
-impl From<i16> for Value {
-    fn from(v: i16) -> Self {
-        Value::Int(v as i64)
-    }
-}
-impl From<i32> for Value {
-    fn from(v: i32) -> Self {
-        Value::Int(v as i64)
-    }
-}
-impl From<i64> for Value {
-    fn from(v: i64) -> Self {
-        Value::Int(v)
-    }
-}
-impl From<f32> for Value {
-    fn from(v: f32) -> Self {
-        Value::Float(v as f64)
-    }
-}
-impl From<f64> for Value {
-    fn from(v: f64) -> Self {
-        Value::Float(v as f64)
-    }
-}
-impl From<&str> for Value {
-    fn from(s: &str) -> Self {
-        Value::Text(s.clone().to_string())
-    }
-}
-impl From<String> for Value {
-    fn from(s: String) -> Self {
-        Value::Text(s)
-    }
-}
-impl From<&Vec<u8>> for Value {
-    fn from(s: &Vec<u8>) -> Self {
-        Value::Blob(s.clone())
-    }
-}
-impl From<Vec<u8>> for Value {
-    fn from(s: Vec<u8>) -> Self {
-        Value::Blob(s)
-    }
-}
-impl From<NullValue> for Value {
-    fn from(_: NullValue) -> Self {
-        Value::Null
-    }
-}
-impl From<&Value> for i64 {
-    fn from(value: &Value) -> i64 {
-        match value {
-            Value::Int(v) => *v,
-            _ => panic!("it is not i64")
-        }
-    }
-}
-impl From<&Value> for f64 {
-    fn from(value: &Value) -> f64 {
-        match value {
-            Value::Float(v) => *v,
-            _ => panic!("it is not f64")
-        }
-    }
-}
-impl From<&Value> for String {
-    fn from(value: &Value) -> String {
-        match value {
-            Value::Text(text) => text.clone(),
-            _ => panic!("it is not a string")
-        }
-    }
-}
 
 
 #[derive(PartialEq, Copy, Clone)]
@@ -128,3 +36,24 @@ impl Type {
     }
 }
 
+#[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
+pub struct Timestamp(i64);
+
+impl Timestamp {
+    pub fn now() -> Timestamp {
+        let dt_utc = DateTime::<Utc>::from_utc(Local::now().naive_utc(), Utc);
+        Timestamp(dt_utc.timestamp())
+    }
+    pub fn tm(v: i64) -> Timestamp {
+        Timestamp(v)
+    }
+    pub fn value(&self) -> i64 {
+        self.0
+    }
+}
+
+impl From<i64> for Timestamp {
+    fn from(v: i64) -> Self {
+        Timestamp(v)
+    }
+}
