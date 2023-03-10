@@ -123,7 +123,7 @@ impl Stmt {
     /// Zwraca indeks kolumny o wskazanej nazwie
     pub(crate) fn column_index(&self, column_name: &str) -> i32 {
         unsafe {
-            sqlite3_bind_parameter_index(self.stmt, str2ptr!(column_name)) as i32
+            sqlite3_bind_parameter_index(self.stmt, str2ptr!(column_name))
         }
     }
 
@@ -186,7 +186,7 @@ impl Stmt {
 
     /// Zwraca wiersz z wyniku
     pub(crate) fn fetch_row(&self, n: usize) -> Row {
-        let mut row = Row::with_capacity(n as usize);
+        let mut row = Row::with_capacity(n);
 
         for i in 0..n {
             let name = self.column_name(i);
@@ -281,7 +281,7 @@ impl Stmt {
 
     fn fetch_i64(&self, idx: usize) -> i64 {
         unsafe {
-            sqlite3_column_int64(self.stmt, idx as c_int) as i64
+            sqlite3_column_int64(self.stmt, idx as c_int)
         }
     }
     #[inline]
@@ -293,7 +293,7 @@ impl Stmt {
     #[inline]
     fn fetch_f64(&self, idx: usize) -> f64 {
         unsafe {
-            sqlite3_column_double(self.stmt, idx as c_int) as f64
+            sqlite3_column_double(self.stmt, idx as c_int)
         }
     }
     #[inline]

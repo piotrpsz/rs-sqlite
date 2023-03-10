@@ -1,9 +1,18 @@
+#![allow(clippy::not_unsafe_ptr_arg_deref)]
+/*
+ * Copyright (C) 2023 Piotr Pszczółkowski
+ * Licence: GNU v2
+ *
+ * E-mail: piotr@beesoft.pl
+ *
+ * Project: rs-sqlite
+ * File: db.rs
+ */
 extern crate sqlite3_sys;
 
 use std::ffi::{CStr, CString};
 use std::fs;
-use std::ptr::{null_mut};
-
+use std::ptr::null_mut;
 
 use sqlite3_sys::{sqlite3,
                   sqlite3_close_v2,
@@ -21,10 +30,9 @@ use sqlite3_sys::{sqlite3,
                   SQLITE_OPEN_CREATE,
                   SQLITE_OPEN_READONLY,
                   SQLITE_OPEN_READWRITE};
-use crate::hash;
 
-use crate::store::Store;
 use crate::stmt::Stmt;
+use crate::store::Store;
 use crate::types::*;
 
 static IN_MEMORY: &str = ":memory:";
@@ -57,7 +65,7 @@ impl SQLite {
 
     /// Sets path to database file.
     pub fn file(mut self, fpath: &str) -> Self {
-        self.fpath = fpath.clone().into();
+        self.fpath = fpath.into();
         self
     }
 
@@ -93,6 +101,8 @@ impl SQLite {
     /**** err_string ***********************************************/
 
     /// Returns last error description.
+    /// @ Safety
+    /// here row pointer is passed
     pub fn err_string(db: *mut sqlite3) -> String {
         unsafe {
             let cptr = sqlite3_errmsg(db);
@@ -103,8 +113,10 @@ impl SQLite {
     /**** err_code *************************************************/
 
     /// Returns last error code.
+    /// # Safety
+    /// here raw pointer is passed
     pub fn err_code(db: *mut sqlite3) -> i32 {
-        unsafe { sqlite3_errcode(db) as i32 }
+        unsafe { sqlite3_errcode( db) }
     }
 
     /**** open *****************************************************/
@@ -149,17 +161,14 @@ impl SQLite {
 
         // Remove database file if on disk.
         if self.fpath != IN_MEMORY {
-            match fs::remove_file(&self.fpath) {
-                Err(err) => {
-                    match err.kind() {
-                        std::io::ErrorKind::NotFound => (),
-                        _ => {
-                            eprintln!("{}", err.to_string());
-                            return false;
-                        }
+            if let Err(err) = fs::remove_file(&self.fpath) {
+                match err.kind() {
+                    std::io::ErrorKind::NotFound => (),
+                    _ => {
+                        eprintln!("{}", err);
+                        return false;
                     }
                 }
-                _ => ()
             };
         }
         unsafe {
@@ -221,11 +230,12 @@ impl SQLite {
         }
 
         let mut stmt = Stmt::new(self.db);
-        if stmt.prepare(query) && stmt.bind(args) {
-            if SQLITE_DONE == stmt.step() {
-                stmt.finalize();
-                return true;
-            }
+        if stmt.prepare(query) &&
+            stmt.bind(args) &&
+            SQLITE_DONE == stmt.step()
+        {
+            stmt.finalize();
+            return true;
         }
         sql_error!(self.db);
         stmt.finalize();
@@ -277,14 +287,14 @@ impl SQLite {
 
     /// Returns last inserted 'rowid'
     fn last_inserted_id(&self) -> i64 {
-        unsafe { sqlite3_last_insert_rowid(self.db) as i64 }
+        unsafe { sqlite3_last_insert_rowid(self.db) }
     }
 
     /**** version_number *******************************************/
 
     /// Returns library version as a number.
     pub fn version_number() -> i32 {
-        unsafe { sqlite3_libversion_number() as i32 }
+        unsafe { sqlite3_libversion_number() }
     }
 
     /**** version **************************************************/
@@ -318,10 +328,8 @@ impl Default for SQLite {
 impl Drop for SQLite {
     fn drop(&mut self) {
         unsafe {
-            if self.close() {
-                if SQLITE_OK == sqlite3_shutdown() {
-                    return;
-                }
+            if self.close() && SQLITE_OK == sqlite3_shutdown() {
+                return;
             }
             sql_error!(self.db);
         }

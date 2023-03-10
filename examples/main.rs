@@ -1,9 +1,17 @@
-// cargo run --example main
+/*
+ * Copyright (C) 2023 Piotr Pszczółkowski
+ * Licence: GNU v2
+ *
+ * E-mail: piotr@beesoft.pl
+ *
+ * Project: rs-sqlite/examples
+ * File: main.rs
+ */
 use rs_sqlite::{
     db::SQLite,
     store::Store,
 };
-use chrono::{Utc, Local, DateTime, NaiveDate, NaiveDateTime, TimeZone};
+use chrono::{Local, NaiveDate, NaiveDateTime, TimeZone};
 use rs_sqlite::types::Timestamp;
 
 fn main() {
@@ -51,7 +59,7 @@ fn main() {
         let desc = format!("update status: {:?}", stat);
         print_content("after change Ahsoka => Luke", &desc,  &mut db);
 
-        let local_tm = Local.from_local_datetime(&NaiveDate::from_ymd_opt(2012, 12, 1).unwrap().and_hms_milli_opt(4, 30, 0, 0).unwrap()).unwrap();;
+        let local_tm = Local.from_local_datetime(&NaiveDate::from_ymd_opt(2012, 12, 1).unwrap().and_hms_milli_opt(4, 30, 0, 0).unwrap()).unwrap();
         let rowid = db.insert(insert_person,
                               Store::new()
                                   .add("Dart")

@@ -1,3 +1,14 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+/*
+ * Copyright (C) 2023 Piotr Pszczółkowski
+ * Licence: GNU v2
+ *
+ * E-mail: piotr@beesoft.pl
+ *
+ * Project: rs-sqlite
+ * File: hash.rs
+ */
 use argon2::{self, Config};
 
 pub fn hash(text: &str) -> u32 {

@@ -1,4 +1,14 @@
 #[allow(unused_macros)]
+/*
+ * Copyright (C) 2023 Piotr Pszczółkowski
+ * Licence: GNU v2
+ *
+ * E-mail: piotr@beesoft.pl
+ *
+ * Project: rs-sqlite
+ * File: macros.inc
+ */
+
 macro_rules! fpos {
         () => {{
         fn f() {}
@@ -29,8 +39,10 @@ macro_rules! fpos {
 #[allow(unused_macros)]
 macro_rules! sql_error(
     ($db: expr) => (
-        let (file, func, line) = fpos!();
-        eprintln!("ERROR [{}/{}:{}] {} ({})", file, func, line, SQLite::err_string($db), SQLite::err_code($db));
+//        unsafe {
+            let (file, func, line) = fpos!();
+            eprintln!("ERROR [{}/{}:{}] {} ({})", file, func, line, SQLite::err_string($db), SQLite::err_code($db));
+//        }
     );
 );
 

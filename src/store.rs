@@ -13,19 +13,20 @@ use crate::types::Timestamp;
 
 use crate::value::{NullValue, Value};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Store(Vec<Value>);
 
 
 impl Store {
     pub fn new() -> Store {
-        Store(Vec::new())
+        Store::default()
     }
     pub fn with_capacity(capacity: usize) -> Store {
         Store(Vec::with_capacity(capacity))
     }
 
     /// Dodanie Value dla parametru przysłanego przez wartość.
+    #[allow(clippy::should_implement_trait)]
     pub fn add<T>(mut self, data: T) -> Self
         where T: ValueConvertible
     {

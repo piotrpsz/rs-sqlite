@@ -8,7 +8,7 @@
  * File: value.rs
  */
 use crate::types::{Timestamp, Type};
-use chrono::{Local, NaiveDateTime, NaiveDate};
+use chrono::NaiveDateTime;
 
 pub struct NullValue;
 
@@ -78,13 +78,13 @@ impl From<f32> for Value {
 
 impl From<f64> for Value {
     fn from(v: f64) -> Self {
-        Value::Float(v as f64)
+        Value::Float(v)
     }
 }
 
 impl From<&str> for Value {
     fn from(s: &str) -> Self {
-        Value::Text(s.clone().to_string())
+        Value::Text(s.to_string())
     }
 }
 
@@ -160,7 +160,7 @@ impl From<&Value> for Timestamp {
 impl From<&Value> for NaiveDateTime {
     fn from(value: &Value) -> NaiveDateTime {
         match value {
-            Value::Text(value) => NaiveDateTime::parse_from_str(&value, "%Y-%m-%d %H:%M:%S").unwrap(),
+            Value::Text(value) => NaiveDateTime::parse_from_str(value, "%Y-%m-%d %H:%M:%S").unwrap(),
             _ => panic!("it is not a NaiveDateTime"),
         }
     }
