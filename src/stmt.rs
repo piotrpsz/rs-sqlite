@@ -15,7 +15,6 @@ use std::ffi::{c_void, CStr, CString};
 use std::intrinsics::copy;
 use std::mem::transmute;
 use std::ptr::null_mut;
-use super::db::SQLite;
 
 use libc::{c_char, c_double, c_int};
 use sqlite3_sys::{sqlite3,
@@ -45,26 +44,40 @@ use sqlite3_sys::{sqlite3,
                   SQLITE_ROW};
 
 use crate::store::Store;
-use crate::types::{Type, Row};
+use crate::types::{Row, Type};
 use crate::value::Value;
+
+use super::db::SQLite;
 
 include!("macros.inc");
 
 /// Stmt object to handle prepared statement
-pub(crate) struct Stmt {
-    stmt: *mut sqlite3_stmt,
+pub(crate) struct Statement {
+    pub(crate) stmt: *mut sqlite3_stmt,
     db: *mut sqlite3,
 }
 
-impl Stmt {
-    pub(crate) fn new(db: *mut sqlite3) -> Stmt {
-        Stmt { stmt: null_mut(), db }
+impl Statement {
+    /// Creates Statement object for passed 'query'.
+    /// Function will prepare a stmt.
+    pub(crate) fn for_query(db: *mut sqlite3, query: &str) -> Option<Statement> {
+        let mut stmt = Statement { stmt: null_mut(), db };
+        match stmt.prepare(query) {
+            true => Some(stmt),
+            _ => None,
+        }
+    }
+
+    /// Create Statement object with 'db' and 'stmt'.
+    /// It is nothing to do, 'stmt' is already prepared.
+    pub(crate) fn for_stmt(db: *mut sqlite3, stmt: *mut sqlite3_stmt) -> Statement {
+        Statement { stmt, db }
     }
 
     /**** prepare **************************************************/
 
     /// Prepare query
-    pub(crate) fn prepare(&mut self, query: &str) -> bool {
+    fn prepare(&mut self, query: &str) -> bool {
         unsafe {
             SQLITE_OK == sqlite3_prepare_v2(
                 self.db,
@@ -168,7 +181,7 @@ impl Stmt {
     ///
     /// # Returns
     /// wektor wierszy (być może pusty)
-    pub(crate) fn fetch_result(&self) -> Vec<Row> {
+    pub(crate) fn fetch_result(&self) -> Option<Vec<Row>> {
         let column_count = self.column_count();
         let mut result = Vec::new();
 
@@ -179,7 +192,10 @@ impl Stmt {
             }
         }
 
-        result
+        match !result.is_empty() {
+            true => Some(result),
+            _ => None
+        }
     }
 
     /**** fetch_row ************************************************/
@@ -312,6 +328,16 @@ impl Stmt {
             let mut data: Vec<u8> = vec![0; nbytes];
             copy(ptr as *mut c_void, data.as_mut_ptr() as *mut c_void, nbytes);
             data
+        }
+    }
+}
+
+impl Drop for Statement {
+    fn drop(&mut self) {
+        if !self.stmt.is_null() {
+            self.reset();
+            // self.finalize();
+            self.stmt = null_mut();
         }
     }
 }

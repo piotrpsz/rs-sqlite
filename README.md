@@ -1,6 +1,7 @@
 # rs-sqlite
 Crate rs-sqlite allows you to use the sqlite3 library in rust.<br>
-First of all, you must have the sqlite3 library available on your hard drive
+First of all, you must have the sqlite3 library available on your hard drive.<br>
+For greater efficiency, the crate implements the reuse of prepared already statements.
 
 # How to use
 ## Add crate to project

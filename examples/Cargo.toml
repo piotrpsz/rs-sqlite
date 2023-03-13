@@ -3,5 +3,6 @@ name = "rs-sqlite-test"
 authors = ["Piotr Pszczółkowski"]
 version = "0.1.0"
 edition = "2021"
+about = "test for rs-sqlite pachage"
 
 [dependencies]
