@@ -10,11 +10,14 @@
  */
 extern crate sqlite3_sys;
 
+use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::fs;
 use std::ptr::null_mut;
 
+use fxhash::hash32;
 use sqlite3_sys::{sqlite3,
+                  sqlite3_stmt,
                   sqlite3_close_v2,
                   sqlite3_errcode,
                   sqlite3_errmsg,
@@ -31,7 +34,7 @@ use sqlite3_sys::{sqlite3,
                   SQLITE_OPEN_READONLY,
                   SQLITE_OPEN_READWRITE};
 
-use crate::stmt::Stmt;
+use crate::stmt::Statement;
 use crate::store::Store;
 use crate::types::*;
 
@@ -47,10 +50,12 @@ include!("macros.inc");
 pub struct SQLite {
     db: *mut sqlite3,
     fpath: String,
+    prepared: HashMap<u32, *mut sqlite3_stmt>,
+    use_prepared: bool,
 }
 
 impl SQLite {
-    /// Inits database.
+    /// Inits handler object.
     pub fn new() -> SQLite {
         println!("sqlite3: {}", SQLite::version());
         unsafe {
@@ -59,6 +64,14 @@ impl SQLite {
                 _ => panic!("can't init sqlite database engine")
             }
         }
+    }
+
+    /**** reause_prepared ******************************************/
+
+    /// Force prepared statemt reuse.
+    pub fn reuse_prepared(mut self) -> Self {
+        self.use_prepared = true;
+        self
     }
 
     /**** file *****************************************************/
@@ -116,7 +129,7 @@ impl SQLite {
     /// # Safety
     /// here raw pointer is passed
     pub fn err_code(db: *mut sqlite3) -> i32 {
-        unsafe { sqlite3_errcode( db) }
+        unsafe { sqlite3_errcode(db) }
     }
 
     /**** open *****************************************************/
@@ -229,16 +242,12 @@ impl SQLite {
             return false;
         }
 
-        let mut stmt = Stmt::new(self.db);
-        if stmt.prepare(query) &&
-            stmt.bind(args) &&
-            SQLITE_DONE == stmt.step()
-        {
-            stmt.finalize();
-            return true;
+        if let Some(mut stmt) = self.stmt_for_query(query) {
+            if stmt.bind(args) && SQLITE_DONE == stmt.step() {
+                return true;
+            }
         }
         sql_error!(self.db);
-        stmt.finalize();
         false
     }
 
@@ -263,16 +272,12 @@ impl SQLite {
             return None;
         }
 
-        let mut stmt = Stmt::new(self.db);
-        if stmt.prepare(query) && stmt.bind(args) {
-            let result = stmt.fetch_result();
-            if !result.is_empty() {
-                return Some(result);
+        if let Some(mut stmt) = self.stmt_for_query(query) {
+            if stmt.bind(args) {
+                return stmt.fetch_result();
             }
-            return None;
         }
         sql_error!(self.db);
-        stmt.finalize();
         None
     }
 
@@ -305,6 +310,30 @@ impl SQLite {
             CStr::from_ptr(sqlite3_libversion()).to_string_lossy().into_owned()
         }
     }
+
+    /**** stmt_for_query *******************************************/
+
+    /// Creates or looking for statement.
+    fn stmt_for_query(&mut self, query: &str) -> Option<Statement> {
+        match self.use_prepared {
+            // user would like to reuse statements
+            true => {
+                let query_hash = hash32(query);
+                match self.prepared.get(&query_hash) {
+                    Some(stmt) => Some(Statement::for_stmt(self.db, *stmt)),
+                    _ => {
+                        if let Some(statement) = Statement::for_query(self.db, query) {
+                            self.prepared.insert(query_hash, statement.stmt);
+                            return Some(statement);
+                        }
+                        None
+                    }
+                }
+            }
+            // every time statements should be prepared
+            _ => Statement::for_query(self.db, query),
+        }
+    }
 }
 
 /********************************************************************
@@ -315,7 +344,12 @@ impl SQLite {
 
 impl Default for SQLite {
     fn default() -> Self {
-        SQLite { db: null_mut(), fpath: "".into() }
+        SQLite {
+            db: null_mut(),
+            fpath: "".into(),
+            prepared: HashMap::new(),
+            use_prepared: false,
+        }
     }
 }
 

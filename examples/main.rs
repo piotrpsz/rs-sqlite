@@ -16,7 +16,8 @@ use rs_sqlite::types::Timestamp;
 
 fn main() {
     let mut db = SQLite::new()
-        .in_memory();
+        .in_memory()
+        .reuse_prepared();
 
     let create_person = r#"
     CREATE TABLE person (
