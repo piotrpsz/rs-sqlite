@@ -154,8 +154,8 @@ impl SQLite {
         }
 
         let flags = match read_only {
-            false => SQLITE_OPEN_READONLY,
-            true => SQLITE_OPEN_READWRITE,
+            true => SQLITE_OPEN_READONLY,
+            false => SQLITE_OPEN_READWRITE,
         };
 
         unsafe {
