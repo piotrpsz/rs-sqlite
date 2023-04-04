@@ -122,6 +122,13 @@ impl SQLite {
             String::from_utf8_lossy(CStr::from_ptr(cptr).to_bytes()).into_owned()
         }
     }
+    pub fn error_string(&self) -> String {
+        unsafe {
+            let cptr = sqlite3_errmsg(self.db);
+            String::from_utf8_lossy(CStr::from_ptr(cptr).to_bytes()).into_owned()
+        }
+    }
+
 
     /**** err_code *************************************************/
 
@@ -131,6 +138,10 @@ impl SQLite {
     pub fn err_code(db: *mut sqlite3) -> i32 {
         unsafe { sqlite3_errcode(db) }
     }
+    pub fn error_code(&self) -> i32 {
+        unsafe { sqlite3_errcode(self.db) }
+    }
+
 
     /**** open *****************************************************/
 
@@ -299,7 +310,9 @@ impl SQLite {
 
     /// Returns library version as a number.
     pub fn version_number() -> i32 {
-        unsafe { sqlite3_libversion_number() }
+        unsafe {
+            sqlite3_libversion_number()
+        }
     }
 
     /**** version **************************************************/
@@ -316,13 +329,17 @@ impl SQLite {
     /// Creates or looking for statement.
     fn stmt_for_query(&mut self, query: &str) -> Option<Statement> {
         match self.use_prepared {
-            // user would like to reuse statements
             true => {
                 let query_hash = hash32(query);
                 match self.prepared.get(&query_hash) {
-                    Some(stmt) => Some(Statement::for_stmt(self.db, *stmt)),
+                    Some(stmt) => {
+                        println!("found previously prepared statement [{} - {}]", query_hash, query);
+                        Some(Statement::for_stmt(self.db, *stmt))
+                    },
                     _ => {
+                        eprintln!("new statement preparation [{}]", query);
                         if let Some(statement) = Statement::for_query(self.db, query) {
+                            println!("hash of prepared statemnt {}", query_hash);
                             self.prepared.insert(query_hash, statement.stmt);
                             return Some(statement);
                         }
